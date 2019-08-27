@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MINI_CHROMIUM_BASE_NUMERICS_SAFE_MATH_CLANG_GCC_IMPL_H_
-#define MINI_CHROMIUM_BASE_NUMERICS_SAFE_MATH_CLANG_GCC_IMPL_H_
+#ifndef BASE_NUMERICS_SAFE_MATH_CLANG_GCC_IMPL_H_
+#define BASE_NUMERICS_SAFE_MATH_CLANG_GCC_IMPL_H_
 
+#include <cassert>
 #include <limits>
 #include <type_traits>
 
 #include "base/numerics/safe_conversions.h"
 
-#if defined(__ARMEL__) || defined(__arch64__)
+#if !defined(__native_client__) && (defined(__ARMEL__) || defined(__arch64__))
 #include "base/numerics/safe_math_arm_impl.h"
 #define BASE_HAS_ASSEMBLER_SAFE_MATH (1)
 #else
@@ -153,4 +154,4 @@ struct ClampedNegFastOp {
 }  // namespace internal
 }  // namespace base
 
-#endif  // MINI_CHROMIUM_BASE_NUMERICS_SAFE_MATH_CLANG_GCC_IMPL_H_
+#endif  // BASE_NUMERICS_SAFE_MATH_CLANG_GCC_IMPL_H_

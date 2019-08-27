@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MINI_CHROMIUM_BASE_NUMERICS_SAFE_CONVERSIONS_IMPL_H_
-#define MINI_CHROMIUM_BASE_NUMERICS_SAFE_CONVERSIONS_IMPL_H_
+#ifndef BASE_NUMERICS_SAFE_CONVERSIONS_IMPL_H_
+#define BASE_NUMERICS_SAFE_CONVERSIONS_IMPL_H_
 
-#include <stddef.h>
 #include <stdint.h>
 
 #include <limits>
@@ -848,4 +847,4 @@ constexpr Dst CommonMaxOrMin(bool is_min) {
 }  // namespace internal
 }  // namespace base
 
-#endif  // MINI_CHROMIUM_BASE_NUMERICS_SAFE_CONVERSIONS_IMPL_H_
+#endif  // BASE_NUMERICS_SAFE_CONVERSIONS_IMPL_H_

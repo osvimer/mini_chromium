@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MINI_CHROMIUM_BASE_NUMERICS_SAFE_MATH_ARM_IMPL_H_
-#define MINI_CHROMIUM_BASE_NUMERICS_SAFE_MATH_ARM_IMPL_H_
+#ifndef BASE_NUMERICS_SAFE_MATH_ARM_IMPL_H_
+#define BASE_NUMERICS_SAFE_MATH_ARM_IMPL_H_
 
-#include <assert.h>
-
+#include <cassert>
 #include <limits>
 #include <type_traits>
 
@@ -120,4 +119,4 @@ struct ClampedMulFastAsmOp {
 }  // namespace internal
 }  // namespace base
 
-#endif  // MINI_CHROMIUM_BASE_NUMERICS_SAFE_MATH_ARM_IMPL_H_
+#endif  // BASE_NUMERICS_SAFE_MATH_ARM_IMPL_H_

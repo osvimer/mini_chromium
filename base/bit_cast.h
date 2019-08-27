@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MINI_CHROMIUM_BASE_BIT_CAST_H_
-#define MINI_CHROMIUM_BASE_BIT_CAST_H_
+#ifndef BASE_BIT_CAST_H_
+#define BASE_BIT_CAST_H_
 
 #include <string.h>
 #include <type_traits>
 
 #include "base/compiler_specific.h"
+#include "base/template_util.h"
 #include "build/build_config.h"
 
 // bit_cast<Dest,Source> is a template function that implements the equivalent
@@ -63,36 +64,14 @@ template <class Dest, class Source>
 inline Dest bit_cast(const Source& source) {
   static_assert(sizeof(Dest) == sizeof(Source),
                 "bit_cast requires source and destination to be the same size");
-
-#if (__GNUC__ > 5 || (__GNUC__ == 5 && __GNUC_MINOR__ >= 1) || \
-     defined(_LIBCPP_VERSION))
-  // GCC 5.1 contains the first libstdc++ with is_trivially_copyable.
-  // Assume libc++ Just Works: is_trivially_copyable added on May 13th 2011.
-  static_assert(std::is_trivially_copyable<Dest>::value,
-                "non-trivially-copyable bit_cast is undefined");
-  static_assert(std::is_trivially_copyable<Source>::value,
-                "non-trivially-copyable bit_cast is undefined");
-#elif HAS_FEATURE(is_trivially_copyable)
-  // The compiler supports an equivalent intrinsic.
-  static_assert(__is_trivially_copyable(Dest),
-                "non-trivially-copyable bit_cast is undefined");
-  static_assert(__is_trivially_copyable(Source),
-                "non-trivially-copyable bit_cast is undefined");
-#elif COMPILER_GCC
-  // Fallback to compiler intrinsic on GCC and clang (which pretends to be
-  // GCC). This isn't quite the same as is_trivially_copyable but it'll do for
-  // our purpose.
-  static_assert(__has_trivial_copy(Dest),
-                "non-trivially-copyable bit_cast is undefined");
-  static_assert(__has_trivial_copy(Source),
-                "non-trivially-copyable bit_cast is undefined");
-#else
-  // Do nothing, let the bots handle it.
-#endif
+  static_assert(base::is_trivially_copyable<Dest>::value,
+                "bit_cast requires the destination type to be copyable");
+  static_assert(base::is_trivially_copyable<Source>::value,
+                "bit_cast requires the source type to be copyable");
 
   Dest dest;
   memcpy(&dest, &source, sizeof(dest));
   return dest;
 }
 
-#endif  // MINI_CHROMIUM_BASE_BIT_CAST_H_
+#endif  // BASE_BIT_CAST_H_

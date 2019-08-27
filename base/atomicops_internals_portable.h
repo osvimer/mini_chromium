@@ -29,10 +29,12 @@
 //    needs to increment twice (which the compiler should be able to detect and
 //    optimize).
 
-#ifndef MINI_CHROMIUM_BASE_ATOMICOPS_INTERNALS_PORTABLE_H_
-#define MINI_CHROMIUM_BASE_ATOMICOPS_INTERNALS_PORTABLE_H_
+#ifndef BASE_ATOMICOPS_INTERNALS_PORTABLE_H_
+#define BASE_ATOMICOPS_INTERNALS_PORTABLE_H_
 
 #include <atomic>
+
+#include "build/build_config.h"
 
 namespace base {
 namespace subtle {
@@ -49,16 +51,6 @@ namespace subtle {
 typedef volatile std::atomic<Atomic32>* AtomicLocation32;
 static_assert(sizeof(*(AtomicLocation32) nullptr) == sizeof(Atomic32),
               "incompatible 32-bit atomic layout");
-
-inline void MemoryBarrier() {
-#if defined(__GLIBCXX__)
-  // Work around libstdc++ bug 51038 where atomic_thread_fence was declared but
-  // not defined, leading to the linker complaining about undefined references.
-  __atomic_thread_fence(std::memory_order_seq_cst);
-#else
-  std::atomic_thread_fence(std::memory_order_seq_cst);
-#endif
-}
 
 inline Atomic32 NoBarrier_CompareAndSwap(volatile Atomic32* ptr,
                                          Atomic32 old_value,
@@ -117,7 +109,7 @@ inline void NoBarrier_Store(volatile Atomic32* ptr, Atomic32 value) {
 
 inline void Acquire_Store(volatile Atomic32* ptr, Atomic32 value) {
   ((AtomicLocation32)ptr)->store(value, std::memory_order_relaxed);
-  MemoryBarrier();
+  std::atomic_thread_fence(std::memory_order_seq_cst);
 }
 
 inline void Release_Store(volatile Atomic32* ptr, Atomic32 value) {
@@ -133,7 +125,7 @@ inline Atomic32 Acquire_Load(volatile const Atomic32* ptr) {
 }
 
 inline Atomic32 Release_Load(volatile const Atomic32* ptr) {
-  MemoryBarrier();
+  std::atomic_thread_fence(std::memory_order_seq_cst);
   return ((AtomicLocation32)ptr)->load(std::memory_order_relaxed);
 }
 
@@ -200,7 +192,7 @@ inline void NoBarrier_Store(volatile Atomic64* ptr, Atomic64 value) {
 
 inline void Acquire_Store(volatile Atomic64* ptr, Atomic64 value) {
   ((AtomicLocation64)ptr)->store(value, std::memory_order_relaxed);
-  MemoryBarrier();
+  std::atomic_thread_fence(std::memory_order_seq_cst);
 }
 
 inline void Release_Store(volatile Atomic64* ptr, Atomic64 value) {
@@ -216,12 +208,12 @@ inline Atomic64 Acquire_Load(volatile const Atomic64* ptr) {
 }
 
 inline Atomic64 Release_Load(volatile const Atomic64* ptr) {
-  MemoryBarrier();
+  std::atomic_thread_fence(std::memory_order_seq_cst);
   return ((AtomicLocation64)ptr)->load(std::memory_order_relaxed);
 }
 
 #endif  // defined(ARCH_CPU_64_BITS)
-}
-}  // namespace base::subtle
+}  // namespace subtle
+}  // namespace base
 
-#endif  // MINI_CHROMIUM_BASE_ATOMICOPS_INTERNALS_PORTABLE_H_
+#endif  // BASE_ATOMICOPS_INTERNALS_PORTABLE_H_

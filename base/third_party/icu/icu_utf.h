@@ -9,8 +9,8 @@
 ******************************************************************************
 */
 
-#ifndef MINI_CHROMIUM_BASE_THIRD_PARTY_ICU_ICU_UTF_H_
-#define MINI_CHROMIUM_BASE_THIRD_PARTY_ICU_ICU_UTF_H_
+#ifndef BASE_THIRD_PARTY_ICU_ICU_UTF_H_
+#define BASE_THIRD_PARTY_ICU_ICU_UTF_H_
 
 #include <stdint.h>
 
@@ -439,4 +439,4 @@ utf8_nextCharSafeBody(const uint8_t *s, int32_t *pi, int32_t length, ::base_icu:
 
 }  // namesapce base_icu
 
-#endif  // MINI_CHROMIUM_BASE_THIRD_PARTY_ICU_ICU_UTF_H_
+#endif  // BASE_THIRD_PARTY_ICU_ICU_UTF_H_

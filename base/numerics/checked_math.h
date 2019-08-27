@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MINI_CHROMIUM_BASE_NUMERICS_CHECKED_MATH_H_
-#define MINI_CHROMIUM_BASE_NUMERICS_CHECKED_MATH_H_
+#ifndef BASE_NUMERICS_CHECKED_MATH_H_
+#define BASE_NUMERICS_CHECKED_MATH_H_
 
 #include <stddef.h>
 
@@ -390,4 +390,4 @@ using internal::CheckXor;
 
 }  // namespace base
 
-#endif  // MINI_CHROMIUM_BASE_NUMERICS_CHECKED_MATH_H_
+#endif  // BASE_NUMERICS_CHECKED_MATH_H_

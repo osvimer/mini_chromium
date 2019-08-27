@@ -1,0 +1,40 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/buildflag_header.gni")
+import("//build/common.gni")
+
+declare_args() {
+  # Provide a way to force disable debugallocation in Debug builds,
+  # e.g. for profiling (it's more rare to profile Debug builds,
+  # but people sometimes need to do that).
+  enable_debugallocation = is_debug
+
+  # Provide a way to build tcmalloc with a low memory footprint.
+  use_tcmalloc_small_but_slow = false
+}
+
+# This "allocator" meta-target will forward to the default allocator according
+# to the build settings.
+group("allocator") {
+  public_deps = []
+  deps = []
+
+  if (use_allocator == "tcmalloc") {
+    deps += [ ":tcmalloc" ]
+  }
+}
+
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  flags = [
+    "USE_ALLOCATOR_SHIM=$use_allocator_shim",
+    "USE_NEW_TCMALLOC=$use_new_tcmalloc",
+  ]
+  if (use_allocator == "tcmalloc") {
+    flags += [ "USE_TCMALLOC=1" ]
+  } else {
+    flags += [ "USE_TCMALLOC=0" ]
+  }
+}

@@ -1,37 +1,33 @@
-// Copyright 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MINI_CHROMIUM_BASE_SYNCHRONIZATION_LOCK_H_
-#define MINI_CHROMIUM_BASE_SYNCHRONIZATION_LOCK_H_
+#ifndef BASE_SYNCHRONIZATION_LOCK_H_
+#define BASE_SYNCHRONIZATION_LOCK_H_
 
+#include "base/base_export.h"
+#include "base/logging.h"
+#include "base/macros.h"
+#include "base/synchronization/lock_impl.h"
+#include "base/thread_annotations.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#elif defined(OS_POSIX)
-#include <pthread.h>
-#endif
-
-#include "base/synchronization/lock_impl.h"
-
 namespace base {
-
-#if defined(OS_WIN)
-typedef DWORD ThreadRefType;
-#elif defined(OS_POSIX)
-typedef pthread_t ThreadRefType;
-#endif
 
 // A convenient wrapper for an OS specific critical section.  The only real
 // intelligence in this class is in debug mode for the support for the
 // AssertAcquired() method.
-class Lock {
+class LOCKABLE BASE_EXPORT Lock {
  public:
-#ifdef NDEBUG
-   // Optimized wrapper implementation
+#if !DCHECK_IS_ON()
+  // Optimized wrapper implementation
   Lock() : lock_() {}
   ~Lock() {}
+
+  // TODO(lukasza): https://crbug.com/831825: Add EXCLUSIVE_LOCK_FUNCTION
+  // annotation to Acquire method and similar annotations to Release, Try and
+  // AssertAcquired methods (here and in the #else branch).
   void Acquire() { lock_.Lock(); }
   void Release() { lock_.Unlock(); }
 
@@ -47,9 +43,9 @@ class Lock {
   Lock();
   ~Lock();
 
-  // NOTE: Although windows critical sections support recursive locks, we do not
-  // allow this, and we will commonly fire a DCHECK() if a thread attempts to
-  // acquire the lock a second time (while already holding it).
+  // NOTE: We do not permit recursive locks and will commonly fire a DCHECK() if
+  // a thread attempts to acquire the lock a second time (while already holding
+  // it).
   void Acquire() {
     lock_.Lock();
     CheckUnheldAndMark();
@@ -68,15 +64,32 @@ class Lock {
   }
 
   void AssertAcquired() const;
-#endif
+#endif  // DCHECK_IS_ON()
 
-  // The posix implementation of ConditionVariable needs to be able
-  // to see our lock and tweak our debugging counters, as it releases
-  // and acquires locks inside of pthread_cond_{timed,}wait.
+  // Whether Lock mitigates priority inversion when used from different thread
+  // priorities.
+  static bool HandlesMultipleThreadPriorities() {
+#if defined(OS_WIN)
+    // Windows mitigates priority inversion by randomly boosting the priority of
+    // ready threads.
+    // https://msdn.microsoft.com/library/windows/desktop/ms684831.aspx
+    return true;
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+    // POSIX mitigates priority inversion by setting the priority of a thread
+    // holding a Lock to the maximum priority of any other thread waiting on it.
+    return internal::LockImpl::PriorityInheritanceAvailable();
+#else
+#error Unsupported platform
+#endif
+  }
+
+  // Both Windows and POSIX implementations of ConditionVariable need to be
+  // able to see our lock and tweak our debugging counters, as they release and
+  // acquire locks inside of their condition variable APIs.
   friend class ConditionVariable;
 
  private:
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   // Members and routines taking care of locks assertions.
   // Note that this checks for recursive locks and allows them
   // if the variable is set.  This is allowed by the underlying implementation
@@ -87,8 +100,8 @@ class Lock {
 
   // All private data is implicitly protected by lock_.
   // Be VERY careful to only access members under that lock.
-  ThreadRefType owning_thread_;
-#endif
+  base::PlatformThreadRef owning_thread_ref_;
+#endif  // DCHECK_IS_ON()
 
   // Platform specific underlying lock implementation.
   internal::LockImpl lock_;
@@ -97,47 +110,24 @@ class Lock {
 };
 
 // A helper class that acquires the given Lock while the AutoLock is in scope.
-class AutoLock {
- public:
-  struct AlreadyAcquired {};
-
-  explicit AutoLock(Lock& lock) : lock_(lock) {
-    lock_.Acquire();
-  }
-
-  AutoLock(Lock& lock, const AlreadyAcquired&) : lock_(lock) {
-    lock_.AssertAcquired();
-  }
-
-  ~AutoLock() {
-    lock_.AssertAcquired();
-    lock_.Release();
-  }
-
- private:
-  Lock& lock_;
-  DISALLOW_COPY_AND_ASSIGN(AutoLock);
-};
+using AutoLock = internal::BasicAutoLock<Lock>;
 
 // AutoUnlock is a helper that will Release() the |lock| argument in the
 // constructor, and re-Acquire() it in the destructor.
-class AutoUnlock {
- public:
-  explicit AutoUnlock(Lock& lock) : lock_(lock) {
-    // We require our caller to have the lock.
-    lock_.AssertAcquired();
-    lock_.Release();
-  }
+using AutoUnlock = internal::BasicAutoUnlock<Lock>;
 
-  ~AutoUnlock() {
-    lock_.Acquire();
-  }
+// Like AutoLock but is a no-op when the provided Lock* is null. Inspired from
+// absl::MutexLockMaybe. Use this instead of base::Optional<base::AutoLock> to
+// get around -Wthread-safety-analysis warnings for conditional locking.
+using AutoLockMaybe = internal::BasicAutoLockMaybe<Lock>;
 
- private:
-  Lock& lock_;
-  DISALLOW_COPY_AND_ASSIGN(AutoUnlock);
-};
+// Like AutoLock but permits Release() of its mutex before destruction.
+// Release() may be called at most once. Inspired from
+// absl::ReleasableMutexLock. Use this instead of base::Optional<base::AutoLock>
+// to get around -Wthread-safety-analysis warnings for AutoLocks that are
+// explicitly released early (prefer proper scoping to this).
+using ReleasableAutoLock = internal::BasicReleasableAutoLock<Lock>;
 
 }  // namespace base
 
-#endif  // MINI_CHROMIUM_BASE_SYNCHRONIZATION_LOCK_H_
+#endif  // BASE_SYNCHRONIZATION_LOCK_H_

@@ -1,0 +1,51 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("libevent") {
+  sources = [
+    "buffer.c",
+    "evbuffer.c",
+    "evdns.c",
+    "evdns.h",
+    "event-config.h",
+    "event-internal.h",
+    "event.c",
+    "event.h",
+    "event_tagging.c",
+    "evhttp.h",
+    "evrpc-internal.h",
+    "evrpc.c",
+    "evrpc.h",
+    "evsignal.h",
+    "evutil.c",
+    "evutil.h",
+    "http-internal.h",
+    "http.c",
+    "log.c",
+    "log.h",
+    "min_heap.h",
+    "poll.c",
+    "select.c",
+    "signal.c",
+    "strlcpy-internal.h",
+    "strlcpy.c",
+  ]
+
+  defines = [
+    "HAVE_CONFIG_H",
+    "NSIG=_NSIG",
+    "SA_RESTART=0x0002",
+  ]
+
+  cflags = [ "-w" ]
+
+  if (is_linux) {
+    sources += [
+      "epoll.c",
+      "linux/config.h",
+      "linux/event-config.h",
+    ]
+    include_dirs = [ "linux" ]
+  }
+}

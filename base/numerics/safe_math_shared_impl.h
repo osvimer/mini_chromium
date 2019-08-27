@@ -2,25 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MINI_CHROMIUM_BASE_NUMERICS_SAFE_MATH_SHARED_IMPL_H_
-#define MINI_CHROMIUM_BASE_NUMERICS_SAFE_MATH_SHARED_IMPL_H_
+#ifndef BASE_NUMERICS_SAFE_MATH_SHARED_IMPL_H_
+#define BASE_NUMERICS_SAFE_MATH_SHARED_IMPL_H_
 
-#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdlib.h>
 
+#include <cassert>
+#include <climits>
 #include <cmath>
+#include <cstdlib>
 #include <limits>
 #include <type_traits>
 
 #include "base/numerics/safe_conversions.h"
 
+#ifdef __asmjs__
+// Optimized safe math instructions are incompatible with asmjs.
+#define BASE_HAS_OPTIMIZED_SAFE_MATH (0)
 // Where available use builtin math overflow support on Clang and GCC.
-#if ((defined(__clang__) &&                                \
-      ((__clang_major__ > 3) ||                            \
-       (__clang_major__ == 3 && __clang_minor__ >= 4))) || \
-     (defined(__GNUC__) && __GNUC__ >= 5))
+#elif !defined(__native_client__) &&                         \
+      ((defined(__clang__) &&                                \
+        ((__clang_major__ > 3) ||                            \
+         (__clang_major__ == 3 && __clang_minor__ >= 4))) || \
+       (defined(__GNUC__) && __GNUC__ >= 5))
 #include "base/numerics/safe_math_clang_gcc_impl.h"
 #define BASE_HAS_OPTIMIZED_SAFE_MATH (1)
 #else
@@ -232,4 +237,4 @@ struct ResultType {
 }  // namespace internal
 }  // namespace base
 
-#endif  // MINI_CHROMIUM_BASE_NUMERICS_SAFE_MATH_SHARED_IMPL_H_
+#endif  // BASE_NUMERICS_SAFE_MATH_SHARED_IMPL_H_

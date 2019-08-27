@@ -1,0 +1,115 @@
+# Copyright 2017 The Crashpad Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Intentionally very minimal, so that Crashpad can build in-tree in a variety of
+# other projects, unrelated to the variables that are set in those projects'
+# BUILDCONFIG.gn. Do not add more variables here. Instead, make them available
+# in build/crashpad_buildconfig.gni if they must be globally available.
+
+if (target_os == "") {
+  target_os = host_os
+}
+
+if (current_os == "") {
+  current_os = target_os
+}
+
+if (target_cpu == "") {
+  target_cpu = host_cpu
+}
+
+if (current_cpu == "") {
+  current_cpu = target_cpu
+}
+
+is_official_build = false
+is_clang = false
+use_allocator = "none"
+use_allocator_shim = true
+use_partition_alloc = true
+
+# OS DEFINITIONS
+is_posix = current_os == "mac" || current_os == "linux"
+is_mac = current_os == "mac"
+is_linux = current_os == "linux"
+is_win = current_os == "win" || current_os == "winuwp"
+# for chromium compatibility
+# to minimize diff in build/toolchain/toolchain.gni etc.
+is_aix = false
+is_android = false
+is_chromeos = false  # goma-chromeos will use os == "linux".
+is_chromecast = false
+is_fuchsia = false
+is_ios = false
+is_nacl = false
+is_component_build = false
+is_chrome_branded = false
+
+#using_sanitizer = is_asan || is_tsan || is_msan
+
+if (current_os == "win") {
+  set_default_toolchain(
+      "//build:msvc_toolchain_$current_cpu")
+} else {
+  set_default_toolchain(
+      "//build:gcc_like_toolchain")
+}
+
+declare_args() {
+  # When true, enables the debug configuration, with additional run-time checks
+  # and logging. When false, enables the release configuration, with additional
+  # optimizations.
+  is_debug = false
+
+  # When true, build all code with -fsanitize=fuzzer, and enable various
+  # *_fuzzer targets.
+  crashpad_use_libfuzzer = false
+}
+
+_default_configs = [
+  "//build:default",
+  "//build:Wexit_time_destructors",
+]
+
+_default_executable_configs =
+    _default_configs + [
+      "//build:executable",
+      "//build:win_console",
+    ]
+
+set_defaults("source_set") {
+  configs = _default_configs
+}
+
+set_defaults("static_library") {
+  configs = _default_configs
+  configs += [ "//build/gcc:symbol_visibility_hidden" ]
+}
+
+set_defaults("executable") {
+  configs = _default_executable_configs
+}
+
+set_defaults("loadable_module") {
+  configs = _default_configs
+}
+
+set_defaults("shared_library") {
+  configs = _default_configs
+  configs += [ "//build/gcc:symbol_visibility_default" ]
+}
+
+set_defaults("test") {
+  configs = _default_executable_configs
+}

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MINI_CHROMIUM_BASE_NUMERICS_CHECKED_MATH_IMPL_H_
-#define MINI_CHROMIUM_BASE_NUMERICS_CHECKED_MATH_IMPL_H_
+#ifndef BASE_NUMERICS_CHECKED_MATH_IMPL_H_
+#define BASE_NUMERICS_CHECKED_MATH_IMPL_H_
 
-#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdlib.h>
 
+#include <climits>
 #include <cmath>
+#include <cstdlib>
 #include <limits>
 #include <type_traits>
 
@@ -564,4 +564,4 @@ class CheckedNumericState<T, NUMERIC_FLOATING> {
 }  // namespace internal
 }  // namespace base
 
-#endif  // MINI_CHROMIUM_BASE_NUMERICS_CHECKED_MATH_IMPL_H_
+#endif  // BASE_NUMERICS_CHECKED_MATH_IMPL_H_

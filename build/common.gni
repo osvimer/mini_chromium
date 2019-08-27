@@ -1,0 +1,23 @@
+#copyright#
+declare_args() {
+  is_cfi = false
+  use_cfi_cast = false
+  use_cfi_icall = false
+  use_cfi_diag = false
+  use_cfi_recover = false
+  enable_profiling = false
+  can_unwind_with_frame_pointers = true
+  can_unwind_with_cfi_table = false
+  enable_log_error_not_reached = false
+  use_lld = true
+  use_clang_coverage = false
+  is_hwasan = false
+
+  #is_official_build = false
+  #is_clang = false
+  #use_allocator = "none"
+  #use_allocator_shim = true
+  #use_partition_alloc = true
+
+  use_new_tcmalloc = false
+}

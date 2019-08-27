@@ -1,0 +1,11 @@
+#copyright#
+
+executable("content") {
+  sources = [
+    "main.cc"
+  ]
+
+  deps = [
+    "//base"
+  ]
+}

@@ -1,0 +1,18 @@
+[submodule "buildtools"]
+	path = buildtools
+	url = https://chromium.googlesource.com/chromium/src/buildtools.git
+[submodule "depot_tools"]
+	path = depot_tools
+	url = https://chromium.googlesource.com/chromium/tools/depot_tools
+[submodule "testing"]
+	path = testing
+	url = https://chromium.googlesource.com/chromium/src/testing
+[submodule "third_party/googletest"]
+	path = third_party/googletest
+	url = https://chromium.googlesource.com/chromium/src/third_party/googletest
+[submodule "modp_b64"]
+	path = modp_b64
+	url = https://chromium.googlesource.com/chromium/src/third_party/modp_b64
+[submodule "third_party/modp_b64"]
+	path = third_party/modp_b64
+	url = https://chromium.googlesource.com/chromium/src/third_party/modp_b64

@@ -25,8 +25,8 @@
 // to use these.
 //
 
-#ifndef MINI_CHROMIUM_BASE_ATOMICOPS_H_
-#define MINI_CHROMIUM_BASE_ATOMICOPS_H_
+#ifndef BASE_ATOMICOPS_H_
+#define BASE_ATOMICOPS_H_
 
 #include <stdint.h>
 
@@ -36,16 +36,8 @@
 // - libstdc++: captures bits/c++config.h for __GLIBCXX__
 #include <cstddef>
 
+#include "base/base_export.h"
 #include "build/build_config.h"
-
-#if defined(OS_WIN) && defined(ARCH_CPU_64_BITS)
-// windows.h #defines this (only on x64). This causes problems because the
-// public API also uses MemoryBarrier at the public name for this fence. So, on
-// X64, undef it, and call its documented
-// (http://msdn.microsoft.com/en-us/library/windows/desktop/ms684208.aspx)
-// implementation directly.
-#undef MemoryBarrier
-#endif
 
 namespace base {
 namespace subtle {
@@ -99,8 +91,7 @@ Atomic32 Barrier_AtomicIncrement(volatile Atomic32* ptr,
 // ensure that no later memory access can be reordered ahead of the operation.
 // "Release" operations ensure that no previous memory access can be reordered
 // after the operation.  "Barrier" operations have both "Acquire" and "Release"
-// semantics.   A MemoryBarrier() has "Barrier" semantics, but does no memory
-// access.
+// semantics.
 Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
                                 Atomic32 old_value,
                                 Atomic32 new_value);
@@ -108,7 +99,6 @@ Atomic32 Release_CompareAndSwap(volatile Atomic32* ptr,
                                 Atomic32 old_value,
                                 Atomic32 new_value);
 
-void MemoryBarrier();
 void NoBarrier_Store(volatile Atomic32* ptr, Atomic32 value);
 void Acquire_Store(volatile Atomic32* ptr, Atomic32 value);
 void Release_Store(volatile Atomic32* ptr, Atomic32 value);
@@ -143,33 +133,13 @@ Atomic64 Release_Load(volatile const Atomic64* ptr);
 }  // namespace subtle
 }  // namespace base
 
-// The following x86 CPU features are used in atomicops_internals_x86_gcc.h, but
-// this file is duplicated inside of Chrome: protobuf and tcmalloc rely on the
-// struct being present at link time. Some parts of Chrome can currently use the
-// portable interface whereas others still use GCC one. The include guards are
-// the same as in atomicops_internals_x86_gcc.cc.
-#if defined(__i386__) || defined(__x86_64__)
-// This struct is not part of the public API of this module; clients may not
-// use it.  (However, it's exported via BASE_EXPORT because clients implicitly
-// do use it at link time by inlining these functions.)
-// Features of this x86.  Values may not be correct before main() is run,
-// but are set conservatively.
-struct AtomicOps_x86CPUFeatureStruct {
-  bool has_amd_lock_mb_bug; // Processor has AMD memory-barrier bug; do lfence
-                            // after acquire compare-and-swap.
-  // The following fields are unused by Chrome's base implementation but are
-  // still used by copies of the same code in other parts of the code base. This
-  // causes an ODR violation, and the other code is likely reading invalid
-  // memory.
-  // TODO(jfb) Delete these fields once the rest of the Chrome code base doesn't
-  //           depend on them.
-  bool has_sse2;            // Processor has SSE2.
-  bool has_cmpxchg16b;      // Processor supports cmpxchg16b instruction.
-};
-extern struct AtomicOps_x86CPUFeatureStruct AtomicOps_Internalx86CPUFeatures;
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_FAMILY)
+// TODO(jfb): Try to use base/atomicops_internals_portable.h everywhere.
+// https://crbug.com/559247.
+#  include "base/atomicops_internals_x86_msvc.h"
+#else
+#  include "base/atomicops_internals_portable.h"
 #endif
-
-#include "base/atomicops_internals_portable.h"
 
 // On some platforms we need additional declarations to make
 // AtomicWord compatible with our other Atomic* types.
@@ -177,4 +147,4 @@ extern struct AtomicOps_x86CPUFeatureStruct AtomicOps_Internalx86CPUFeatures;
 #include "base/atomicops_internals_atomicword_compat.h"
 #endif
 
-#endif  // MINI_CHROMIUM_BASE_ATOMICOPS_H_
+#endif  // BASE_ATOMICOPS_H_
