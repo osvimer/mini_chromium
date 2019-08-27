@@ -14,8 +14,8 @@ from the [Chromium open-source project](https://dev.chromium.org/Home).
 ## Getting Started
 
 ```shell
-git clone https://github.com/osvimer/mini_chromium
-cd mini_chromium
+git clone https://github.com/osvimer/tiny_chromium
+cd tiny_chromium
 git submodule update --init --recursive
 ./make.sh
 ```
